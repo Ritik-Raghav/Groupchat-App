@@ -1,4 +1,4 @@
-const frontendBaseUrl = "";
+const frontendBaseUrl = "http://127.0.0.1:5501";
 const backendBaseUrl = "http://localhost:3000";
 
 const form = document.querySelector('#signup-form');
@@ -23,6 +23,7 @@ form.addEventListener('submit', async (event) => {
         const user = response.data;
         alert('User signed up successfully');
         console.log(user)
+        window.location.href = `${frontendBaseUrl}/views/login/login.html`;
     }
     catch(error) {
         // Handle errors
