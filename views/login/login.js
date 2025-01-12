@@ -20,6 +20,7 @@ form.addEventListener('submit', async (event) => {
         console.log(user.token);
         localStorage.setItem('token', user.token);
         alert('User logged in successfully');
+        window.location.href = `${frontendBaseUrl}/views/chat/chat.html`;
         
     }
     catch(error) {
