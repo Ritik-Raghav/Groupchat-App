@@ -5,7 +5,7 @@ const userAuthentication = require('../middleware/auth');
 
 
 router.post('/postChat', userAuthentication.authenticate, chatController.postChat);
-// router.get('/getChat', userAuthentication.authenticate, chatController.getChat);
+router.get('/getChats', userAuthentication.authenticate, chatController.getChats);
 
 
 

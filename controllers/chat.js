@@ -9,12 +9,42 @@ exports.postChat = async (req, res, next) => {
         const currentUser = req.user;
         const { chat, dateTime} = req.body;
         console.log(chat);
-        const newChat = await currentUser.createChat({ chat: chat});
-        res.status(200).json({'userId': currentUser.id, 'user': currentUser.username, 'chat': chat, 'dateTime': dateTime});
+        const newChat = await currentUser.createChat({ chat: chat, dateTime: dateTime});
+        res.status(200).json({'id': currentUser.id, 'username': currentUser.username, 'chat': chat, 'dateTime': dateTime});
     }
     catch(error) {
         console.log(error);
         res.status(202).json({ message: 'Error occurred'});
+    }
+}
+
+exports.getChats = async (req, res, next) => {
+    try {
+        const chats = await Chat.findAll({
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['username'],
+                },
+            ],
+            order: [['dateTime', 'ASC']], // order by time date
+        });
+
+        // Formatting the response
+        const formattedChats = chats.map(chat => ({
+            id: chat.userId,
+            chat: chat.chat,
+            dateTime: chat.dateTime,
+            username: chat.user.username
+        }));
+
+        console.log(formattedChats)
+        
+        res.status(200).json(formattedChats);
+    }
+    catch(error) {
+        console.log(error);
     }
 }
 
