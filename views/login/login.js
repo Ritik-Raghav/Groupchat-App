@@ -17,10 +17,15 @@ form.addEventListener('submit', async (event) => {
     try {
         const response = await axios.post(`${backendBaseUrl}/login/user`, userObj);
         const user = response.data;
-        console.log(user.token);
-        localStorage.setItem('token', user.token);
+        console.log(user)
+        const obj = {
+            id: user.userId,
+            token: user.token
+        }
+        localStorage.setItem('id', obj.id);
+        localStorage.setItem('token', obj.token);
         alert('User logged in successfully');
-        window.location.href = `${frontendBaseUrl}/views/chat/chat.html`;
+        window.location.href = `${frontendBaseUrl}/views/chat/index.html`;
         
     }
     catch(error) {

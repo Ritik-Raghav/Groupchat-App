@@ -8,20 +8,24 @@ const bodyParser = require('body-parser');
 
 const sequelize = require('./util/database');
 const User = require('./models/user');
+const Chat = require('./models/chat');
 
 const signupRoutes = require('./routes/signup');
 const loginRoutes = require('./routes/login');
+const chatRoutes = require('./routes/chat');
 
 
 app.use(cors());
-
 app.use(bodyParser.urlencoded({ extended: false }));
-
 app.use(bodyParser.json());
-
+``
 app.use('/signup/', signupRoutes);
 app.use('/login/', loginRoutes);
+app.use('/chat', chatRoutes);
 
+
+User.hasMany(Chat);
+Chat.belongsTo(User);
 
 
 sequelize.sync()
