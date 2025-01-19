@@ -67,3 +67,8 @@ async function getAllChats() {
 function scrollToBottom() {
     messageContainer.scrollTo(0, messageContainer.scrollHeight);
 }
+
+setInterval(() => {
+    messageContainer.innerHTML = '';
+    getAllChats();
+}, 1000);
