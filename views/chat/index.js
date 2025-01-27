@@ -1,3 +1,5 @@
+
+
 const frontendBaseUrl = "http://127.0.0.1:5501";
 const backendBaseUrl = "http://localhost:3000";
 
@@ -8,7 +10,8 @@ const messageInput = document.querySelector('#message-input');
 const messageContainer = document.querySelector('#message-container');
 
 window.addEventListener('DOMContentLoaded', async () => {
-    getAllChats();
+    // getAllChats();
+    getChatsById();
 })
 
 messageForm.addEventListener('submit',  async (event) => {
@@ -36,7 +39,7 @@ messageForm.addEventListener('submit',  async (event) => {
 function displayData(obj) {
     const messageElement = document.createElement('li');
     const id = Number(localStorage.getItem('id'));
-    const isCurrentUser = obj.id === id;
+    const isCurrentUser = obj.userId === id;
     console.log(isCurrentUser)
     console.log(obj.id + " ---- " + id)
     messageElement.className = isCurrentUser ? 'message-right' : 'message-left';
@@ -55,13 +58,43 @@ async function getAllChats() {
     try {
         const response = await axios.get(`${backendBaseUrl}/chat/getChats`, {headers: {'Authorization': token}});
         const allChats = response.data;
+        console.log(allChats)
+        localStorage.setItem('chats', allChats)
         allChats.forEach(user => {
             displayData(user);
-        })
+        })  
     }
     catch(error) {
         console.log(error);
     }
+}
+
+let lastId = 0;
+async function getChatsById() {
+    let localChats = localStorage.getItem('localChats');
+    if (localChats === null) {
+        localStorage.setItem('localChats', '[]');
+        localChats = localStorage.getItem('localChats')
+    }
+    const chatsArr = JSON.parse(localChats);
+    console.log(chatsArr)
+    if (chatsArr.length != 0) {
+        lastId = chatsArr[chatsArr.length - 1].id;
+    }
+    const response = await axios.get(`${backendBaseUrl}/chat/getChats/${lastId}`, {headers: {'Authorization': token}});
+    const data = response.data;
+    console.log(data.formattedChats);
+    console.log(data.change)
+    // if (data.change) {
+        const mergedArray = chatsArr.concat(data.formattedChats);
+        // console.log(mergedArray)
+        const resultString = JSON.stringify(mergedArray);
+        localStorage.setItem('localChats', resultString);
+        mergedArray.forEach(user => {
+            displayData(user);
+        })
+    // }
+
 }
 
 function scrollToBottom() {
@@ -70,5 +103,5 @@ function scrollToBottom() {
 
 setInterval(() => {
     messageContainer.innerHTML = '';
-    getAllChats();
-}, 1000);
+    getChatsById();
+}, 2000);
