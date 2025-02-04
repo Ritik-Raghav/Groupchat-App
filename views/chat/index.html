@@ -9,35 +9,84 @@
 </head>
 <body>
     <h1 class="title">ChatApp</h1>
-    <div class="main">
-        <div class="name">
-            <span><i class="far fa-user"></i></span>
-            <input type="text" id="name-input" class="name-input" value="anonymous" maxlength="20">
+
+    <div class="windows">
+        <div class="main">
+            <div class="name">
+                <span><i class="far fa-user"></i></span>
+                <!-- <input type="text" " class="name-input" value="Create Group" maxlength="20"> -->
+                <h1 class="name-input">Create Group</h1>
+                <button class="send-button" id="show-groups">Show Groups</button>
+            </div>
+            <div class="message-container">
+                <div class="member-container">
+                    <form class="member-container" id="group-form">
+                        <input class="member" type="text" id="groupName" name="groupName" placeholder="Enter group name here ..." required>
+                        <button type="submit" class="send-button" id="group-btn">submit</button>
+                    </form>
+
+                    <div class="group-setting">
+                        <div class="setting-container">
+                            
+                            <h2>Group Settings</h2>
+                            <h3 id="grpNameHeading">Group Name: <span id="grpName">hi</span></h3>
+                            <form class="member-container" id="member-form">
+                                <input type="text" class="member" id="selectMember" placeholder="Enter member name here ..." required>
+                                <button type="submit" class="send-button" id="add-member-btn">Add</button>
+                            </form>
+                            <ul  id="member-items">
+                                <li class="member-item">hi there <button>send</button></li>
+                                <li class="member-item">hi there <button>send</button></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="groups-container">
+                    <ul  id="group-items">
+                        <li class="group-item">group-1</li>
+                        <li class="group-item">the boys </li>
+                    </ul>
+                </div>
+                
+            </div>
+            
+            
         </div>
-        <ul class="message-container" id="message-container">
-            <li class="message-left">
-                <p class="message">
-                    dummy text
-                    <span>bluebird ⚫ 26 July 10:40</span>
-                </p>
-            </li>
 
-            <li class="message-right">
-                <p class="message">
-                    dummy text
-                    <span>bluebird ⚫ 26 July 10:40</span>
-                </p>
-            </li>
-        </ul>
-
-        <form class="message-form" id="message-form">
-            <input type="text" name="message" class="message-input" id="message-input">
-            <div class="v-divider"></div>
-            <button type="submit" class="send-button">
-                send <span><i class="fas fa-paper-plane"></i></span>
-            </button>
-        </form>
+        <div class="main">
+            <div class="name">
+                <span><i class="far fa-user"></i></span>
+                <input type="text" id="name-input" class="name-input" value="anonymous" maxlength="20">
+            </div>
+            <ul class="message-container" id="message-container">
+                <li class="message-left">
+                    <p class="message">
+                        dummy text
+                        <span>bluebird ⚫ 26 July 10:40</span>
+                    </p>
+                </li>
+    
+                <li class="message-right">
+                    <p class="message">
+                        dummy text
+                        <span>bluebird ⚫ 26 July 10:40</span>
+                    </p>
+                </li>
+            </ul>
+    
+            <form class="message-form" id="message-form">
+                <input type="text" name="messageInput" class="message-input" id="messageInput">
+                <div class="v-divider"></div>
+                <button type="submit" class="send-button">
+                    send <span><i class="fas fa-paper-plane"></i></span>
+                </button>
+            </form>
+        </div>
     </div>
+    
+
+    
     <h3 class="user-total" id="user-total">Total users: 2</h3>
 
     <script
@@ -48,5 +97,6 @@
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/moment.min.js"></script>
     <script src="index.js"></script>
+    <script src="group.js"></script>
 </body>
 </html>

@@ -6,7 +6,7 @@ const backendBaseUrl = "http://localhost:3000";
 const token = localStorage.getItem('token');
 
 const messageForm = document.querySelector('#message-form');
-const messageInput = document.querySelector('#message-input');
+const messageInput = document.querySelector('#messageInput');
 const messageContainer = document.querySelector('#message-container');
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -16,18 +16,30 @@ window.addEventListener('DOMContentLoaded', async () => {
 
 messageForm.addEventListener('submit',  async (event) => {
     event.preventDefault();
-
     try {
-        const chat = messageInput.value;
-        const dateTime = new Date();
-        const chatObj = {
-            chat,
-            dateTime
-        }
+
+        if (!groupChat) {
+            const chat = messageInput.value;
+            const dateTime = new Date();
+            const chatObj = {
+                chat,
+                dateTime
+            }
 
         const response = await axios.post(`${backendBaseUrl}/chat/postChat`, chatObj, { headers: {'Authorization': token}});
         const data = response.data;
         displayData(data);
+        }
+        // const chat = messageInput.value;
+        // const dateTime = new Date();
+        // const chatObj = {
+        //     chat,
+        //     dateTime
+        // }
+
+        // const response = await axios.post(`${backendBaseUrl}/chat/postChat`, chatObj, { headers: {'Authorization': token}});
+        // const data = response.data;
+        // displayData(data);
     }
     catch(error) {
         console.log(error);
@@ -40,8 +52,8 @@ function displayData(obj) {
     const messageElement = document.createElement('li');
     const id = Number(localStorage.getItem('id'));
     const isCurrentUser = obj.userId === id;
-    console.log(isCurrentUser)
-    console.log(obj.id + " ---- " + id)
+    // console.log(isCurrentUser)
+    // console.log(obj.id + " ---- " + id)
     messageElement.className = isCurrentUser ? 'message-right' : 'message-left';
     messageElement.innerHTML = `
         <p class="message">
@@ -58,7 +70,6 @@ async function getAllChats() {
     try {
         const response = await axios.get(`${backendBaseUrl}/chat/getChats`, {headers: {'Authorization': token}});
         const allChats = response.data;
-        console.log(allChats)
         localStorage.setItem('chats', allChats)
         allChats.forEach(user => {
             displayData(user);
@@ -77,14 +88,11 @@ async function getChatsById() {
         localChats = localStorage.getItem('localChats')
     }
     const chatsArr = JSON.parse(localChats);
-    console.log(chatsArr)
     if (chatsArr.length != 0) {
         lastId = chatsArr[chatsArr.length - 1].id;
     }
     const response = await axios.get(`${backendBaseUrl}/chat/getChats/${lastId}`, {headers: {'Authorization': token}});
     const data = response.data;
-    console.log(data.formattedChats);
-    console.log(data.change)
     // if (data.change) {
         const mergedArray = chatsArr.concat(data.formattedChats);
         // console.log(mergedArray)
@@ -101,7 +109,7 @@ function scrollToBottom() {
     messageContainer.scrollTo(0, messageContainer.scrollHeight);
 }
 
-setInterval(() => {
-    messageContainer.innerHTML = '';
-    getChatsById();
-}, 2000);
+// setInterval(() => {
+//     messageContainer.innerHTML = '';
+//     getChatsById();
+// }, 2000);
