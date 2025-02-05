@@ -1,3 +1,4 @@
+import {frontendBaseUrl, backendBaseUrl, token, messageForm, messageInput, messageContainer, displayData } from './index.js';
 
 const groupForm = document.querySelector('#group-form');
 const memberForm = document.querySelector('#member-form');
@@ -10,7 +11,9 @@ const groupItems = document.querySelector('#group-items');
 const groupItem = document.querySelector('.group-item');
 const grpName = document.querySelector('#grpName');
 
-let currentGroupId = null;
+let lastId = 0;
+
+export let currentGroupId = null;
 
 
 groupSetting.style.display = 'none';
@@ -63,7 +66,7 @@ function displayAllGroupMembers(group, user) {
     }
 }
 
-let groupChat = false;
+export let groupChat = false;
 
 groupItems.addEventListener('click', async (e) => { 
     e.preventDefault();
@@ -71,7 +74,6 @@ groupItems.addEventListener('click', async (e) => {
 
     try {
         
-        //if (groupChat) {
             if(e.target.tagName === 'LI') {
                 const element = e.target;
                 console.log(element);
@@ -97,23 +99,18 @@ groupItems.addEventListener('click', async (e) => {
                 const userGroup = {
                     groupId
                 }
+                
+                await something(userGroup);
 
-                //if (groupChat) {
-                    await something(userGroup);
-    
-                //     await postGroupChat(groupId);
-                // }
-    
-                
-                
+                await getGroupChats();
             }
         }
-        
-    //}
     catch(error) {
         console.log(error);
     }
 });
+
+
 
 
 
@@ -279,40 +276,14 @@ function displayGroups(obj) {
 }
 
 
-// async function postGroupChat(groupId) {
-    
-        messageForm.addEventListener('submit',  async (e) => {
-            e.preventDefault();
-        
-            try {
-                console.log(groupChat)
-                if (groupChat) {
-                    const chat = messageInput.value;
-                console.log(chat)
-                const dateTime = new Date();
-                const chatObj = {
-                    chat,
-                    dateTime,
-                    groupId: currentGroupId
-                }
-    
-                console.log(chatObj)
-        
-                const response = await axios.post(`${backendBaseUrl}/group/postGroupChat`, chatObj, { headers: {'Authorization': token}});
-                const data = response.data;
-                displayData(data);
-                }
-                
-            }
-            catch(error) {
-                console.log(error);
-            }
-        
-            e.target.reset();
-        });
-    
-    
-// }
+async function getGroupChats() {
+    const response = await axios.get(`${backendBaseUrl}/group/getGroupChats/${currentGroupId}`, { headers: {'Authorization': token}});
+    const data = response.data;
+    console.log(data)
+        // data.forEach(user => {
+        //     displayData(user);
+        // })
+}
 
 
 

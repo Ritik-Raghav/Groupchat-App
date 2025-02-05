@@ -173,3 +173,39 @@ exports.postGroupChat = async (req, res, next) => {
         res.status(202).json({ message: 'Error occurred'});
     }
 }
+
+exports.getGroupChats = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        console.log('currentGroupId <<<<<<<<<<<<<' + id);
+        const chats = await Chat.findAll({
+            where: {
+                groupId: id
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['username'],
+                },
+            ],
+            order: [['dateTime', 'ASC']],
+        });
+
+        // Formatting the response
+        const formattedChats = chats.map(chat => ({
+            id: chat.id,
+            userId: chat.userId,
+            groupId: chat.groupId,
+            chat: chat.chat,
+            dateTime: chat.dateTime,
+            username: chat.user.username
+        }));
+        console.log(formattedChats);
+        
+        res.json({formattedChats});
+    }
+    catch(error) {
+        console.log(error);
+    }
+}

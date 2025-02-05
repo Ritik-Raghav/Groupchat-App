@@ -1,21 +1,24 @@
 
+import { currentGroupId, groupChat } from './group.js';
 
-const frontendBaseUrl = "http://127.0.0.1:5501";
-const backendBaseUrl = "http://localhost:3000";
+export const frontendBaseUrl = "http://127.0.0.1:5501";
+export const backendBaseUrl = "http://localhost:3000";
 
-const token = localStorage.getItem('token');
+export const token = localStorage.getItem('token');
 
-const messageForm = document.querySelector('#message-form');
-const messageInput = document.querySelector('#messageInput');
-const messageContainer = document.querySelector('#message-container');
+export const messageForm = document.querySelector('#message-form');
+export const messageInput = document.querySelector('#messageInput');
+export const messageContainer = document.querySelector('#message-container');
 
 window.addEventListener('DOMContentLoaded', async () => {
     // getAllChats();
-    getChatsById();
+    // getChatsById();
 })
 
 messageForm.addEventListener('submit',  async (event) => {
     event.preventDefault();
+    console.log(groupChat)
+    
     try {
 
         if (!groupChat) {
@@ -26,20 +29,29 @@ messageForm.addEventListener('submit',  async (event) => {
                 dateTime
             }
 
-        const response = await axios.post(`${backendBaseUrl}/chat/postChat`, chatObj, { headers: {'Authorization': token}});
-        const data = response.data;
-        displayData(data);
+            const response = await axios.post(`${backendBaseUrl}/chat/postChat`, chatObj, { headers: {'Authorization': token}});
+            const data = response.data;
+            displayData(data);
         }
-        // const chat = messageInput.value;
-        // const dateTime = new Date();
-        // const chatObj = {
-        //     chat,
-        //     dateTime
-        // }
+        else {
+                    console.log(groupChat)
+                    const chat = messageInput.value;
+                    console.log(chat)
+                    const dateTime = new Date();
+                    const chatObj = {
+                        chat,
+                        dateTime,
+                        groupId: currentGroupId
+                    }
+        
+                    console.log(chatObj)
+            
+                    const response = await axios.post(`${backendBaseUrl}/group/postGroupChat`, chatObj, { headers: {'Authorization': token}});
+                    const data = response.data;
+                    displayData(data);
 
-        // const response = await axios.post(`${backendBaseUrl}/chat/postChat`, chatObj, { headers: {'Authorization': token}});
-        // const data = response.data;
-        // displayData(data);
+
+        }
     }
     catch(error) {
         console.log(error);
@@ -48,7 +60,7 @@ messageForm.addEventListener('submit',  async (event) => {
     event.target.reset();
 });
 
-function displayData(obj) {
+export function displayData(obj) {
     const messageElement = document.createElement('li');
     const id = Number(localStorage.getItem('id'));
     const isCurrentUser = obj.userId === id;
