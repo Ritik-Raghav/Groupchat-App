@@ -1,4 +1,4 @@
-import {frontendBaseUrl, backendBaseUrl, token, messageForm, messageInput, messageContainer, displayData } from './index.js';
+import { frontendBaseUrl, backendBaseUrl, token, messageForm, messageInput, messageContainer, displayData } from './index.js';
 
 const groupForm = document.querySelector('#group-form');
 const memberForm = document.querySelector('#member-form');
@@ -8,16 +8,18 @@ const memberContainer = document.querySelector('.member-container');
 const showGroupsBtn = document.querySelector('#show-groups');
 const groupsContainer = document.querySelector('.groups-container');
 const groupItems = document.querySelector('#group-items');
-const groupItem = document.querySelector('.group-item');
 const grpName = document.querySelector('#grpName');
 
+const currentUserId = localStorage.getItem('id');
+console.log(currentUserId)
+
+let editGroup = false;
 let lastId = 0;
-
 export let currentGroupId = null;
-
+export let groupChat = false;
+let groupsFlag = false;
 
 groupSetting.style.display = 'none';
-
 groupsContainer.style.display = 'none';
 
 function displayAllGroupMembers(group, user) {
@@ -27,196 +29,193 @@ function displayAllGroupMembers(group, user) {
     element.className = 'member-item';
     element.id = user.id;
     element.textContent = user.username;
+    console.log(group)
+    console.log(user)
 
-    // creating buttons
+    const obj = {
+        usergroup: {
+
+        }
+    }
+    obj.usergroup.groupId = group.id;
+    obj.usergroup.userId = user.id;
+
+
     const delBtn = document.createElement('button');
     delBtn.className = 'delMember';
     delBtn.textContent = 'delete';
 
+
+    let num = user.usergroup.isadmin === true ? 1 : 0;
+
     const adminBtn = document.createElement('button');
     adminBtn.className = 'adminMember';
     adminBtn.textContent = 'make-admin';
+    adminBtn.id = num;
+    console.log(num);
+    if (adminBtn.id === '1') {
+        adminBtn.textContent = 'remove-admin';
+        adminBtn.style.backgroundColor = 'darkRed';
+        adminBtn.style.color = 'white';
+    }
+    else {
+        adminBtn.textContent = 'make-admin';
+        adminBtn.style.backgroundColor = 'white';
+        adminBtn.style.color = 'black';
+    }
 
-    element.appendChild(adminBtn);
-    element.appendChild(delBtn);
+    
 
-    elementDiv.appendChild(element);
-    memberItems.appendChild(elementDiv);
-
-    // delete funtionality
-    delBtn.onclick = async (event) => {
+    delBtn.addEventListener('click', async (event) => {
         event.preventDefault();
         try {
             const groupId = group.id;
-            const userId = event.target.parentElement.id;
-            const memberObj = {
-                groupId,
-                userId
-            }
-            console.log(event.target.parentElement);
-            const response = await axios.delete(`${backendBaseUrl}/group/deleteMember`, {data: memberObj});
-            const data = response.data;
+            const userId = user.id;
+            await axios.delete(`${backendBaseUrl}/group/deleteMember`, { data: { groupId, userId } });
+            memberItems.removeChild(elementDiv);
+        } catch (error) {
+            console.error(error);
+        }
+    });
 
-            memberItems.removeChild(event.target.parentElement.parentElement);
-            
+    let isAdmin = false;
+    adminBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        let admin = event.target.id;
+        console.log(admin)
+        try {
+            if (admin === '0') {
+                admin = 1;
+                console.log(admin);
+
+                const response = await axios.patch(`${backendBaseUrl}/group/updateAdmin`, { admin: admin, obj: obj }, { headers: { 'Authorization': token } });
+                const data = response.data;
+                console.log(data);
+
+                adminBtn.textContent = 'remove-admin';
+                adminBtn.style.backgroundColor = 'darkRed';
+                adminBtn.style.color = 'white';
+                adminBtn.id = admin;
+                isAdmin = true;
+            }
+            else {
+                admin = 0;
+
+                const response = await axios.patch(`${backendBaseUrl}/group/updateAdmin`, { admin: admin, obj: obj }, { headers: { 'Authorization': token } });
+                const data = response.data;
+                console.log(data);
+
+                adminBtn.textContent = 'make-admin';
+                adminBtn.style.backgroundColor = 'white';
+                adminBtn.style.color = 'black';
+                adminBtn.id = admin;
+                isAdmin = false;
+            }
+
         }
         catch(error) {
             console.log(error);
         }
-    }
+    })
+
+    element.append(adminBtn, delBtn);
+    elementDiv.appendChild(element);
+    memberItems.appendChild(elementDiv);
 }
 
-export let groupChat = false;
 
 groupItems.addEventListener('click', async (e) => { 
     e.preventDefault();
+    if (e.target.tagName !== 'LI') return;
+    
     groupChat = true;
-
+    editGroup = true;
+    currentGroupId = e.target.id;
+    
     try {
-        
-            if(e.target.tagName === 'LI') {
-                const element = e.target;
-                console.log(element);
-                const groupId = element.id;
-                currentGroupId = groupId;
-    
-                const response = await axios.get(`${backendBaseUrl}/group/getGroupById/${groupId}`, { headers: {'Authorization': token}});
-                const data = response.data;
-                console.log(data);
-                const group = response.data.group;
-                const users = response.data.users;
-    
-                memberItems.innerHTML = '';
-                users.forEach(user => {
-                    displayAllGroupMembers(group, user);
-                });
-    
-                groupsContainer.style.display = 'none';
-                groupSetting.style.display = 'block';
-                memberContainer.style.display = 'block';
-                groupForm.style.display = 'none';
-                
-                const userGroup = {
-                    groupId
-                }
-                
-                await something(userGroup);
+        const response = await axios.get(`${backendBaseUrl}/group/getGroupById/${currentGroupId}`, { headers: { 'Authorization': token } });
+        const { group, users } = response.data;
 
-                await getGroupChats();
-            }
-        }
-    catch(error) {
-        console.log(error);
+        memberItems.innerHTML = '';
+        
+        users.forEach(user => displayAllGroupMembers(group, user));
+
+        groupsContainer.style.display = 'none';
+        groupSetting.style.display = 'block';
+        memberContainer.style.display = 'block';
+        groupForm.style.display = 'none';
+        
+        await getGroupChats();
+    } catch (error) {
+        console.error(error);
     }
 });
 
-
-
-
-
-let groupsFlag = false;
-
-showGroupsBtn.onclick = async (e) => {
+showGroupsBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-
-    try {
-        if (groupsContainer.style.display === 'none') {
-            if (!groupsFlag) {
-                await getGroups();
-                groupsFlag = true;
-            }
-            memberContainer.style.display = 'none'
-            groupsContainer.style.display = 'block';
-            
-        }
-        else if (groupsContainer.style.display === 'block') {
-            groupsContainer.style.display = 'none';
-            memberContainer.style.display = 'block';
-            groupForm.style.display = 'flex';
-            groupSetting.style.display = 'none'
-            
-        }
+    groupsContainer.style.display = groupsContainer.style.display === 'none' ? 'block' : 'none';
+    groupSetting.style.display = 'none';
+    memberContainer.style.display = groupsContainer.style.display === 'block' ? 'none' : 'block';
+    groupForm.style.display = groupsContainer.style.display === 'block' ? 'none' : 'flex';
+    
+    if (!groupsFlag && groupsContainer.style.display === 'block') {
+        await getGroups();
+        groupsFlag = true;
     }
-    catch(error) {
-        console.log(error);
-    }
-}
+});
 
 async function getGroups() {
     try {
-        const response = await axios.get(`${backendBaseUrl}/group/getUserGroups`, { headers: {'Authorization': token}});
-            const data = response.data;
-            console.log(data);
-
-            groupItems.innerHTML = '';
-            data.forEach(group => {
-            displayGroups(group);
-        });
+        const response = await axios.get(`${backendBaseUrl}/group/getUserGroups`, { headers: { 'Authorization': token } });
+        groupItems.innerHTML = '';
+        // console.log(response.data);
+        response.data.forEach(displayGroups);
+    } catch (error) {
+        console.error(error);
     }
-    catch(error) {
-        console.log(error);
-    }    
 }
 
 groupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-
+    editGroup = false;
+    
     try {
         const groupName = event.target.groupName.value;
-        console.log(groupName);
-        let groupDetails = {
-            groupName
-        }
+        const response = await axios.post(`${backendBaseUrl}/group/postGroup`, { groupName }, { headers: { 'Authorization': token } });
+        grpName.textContent = response.data.name;
+        currentGroupId = response.data.id;
 
-        const response = await axios.post(`${backendBaseUrl}/group/postGroup`, groupDetails, { headers: {'Authorization': token}});
-        const data = response.data;
-        console.log(data);
-        let userGroup = {
-            groupId: data.id,
-        }
-
-        // const grpName = document.querySelector('#grpName');
-        grpName.textContent = data.name;
+        memberItems.innerHTML = '';
 
         if (groupSetting.style.display === 'none') {
             groupSetting.style.display = 'block';
             groupForm.style.display = 'none';
         }
-
-        await something(userGroup);
-
-    }
-    catch(error) {
-        console.log(error);
+    } catch (error) {
+        console.error(error);
     }
     event.target.reset();
 });
 
-async function something(userGroup) {
-    memberForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        try {
-            const member = e.target.selectMember.value;
-            userGroup.memberName = member;
-    
-            // const response = await axios.post(`${backendBaseUrl}/group/postMember`, userGroup, { headers: {'Authorization': token}});
-            // const data = response.data;
-            // console.log(data);
-            // displayGroupMembers(data);
-            await postMember(userGroup);
-        }
-        catch(error) {
-            console.log(error);
-        }
-        e.target.reset();
-    });
-}
+memberForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const member = e.target.selectMember.value;
+        await postMember({ groupId: currentGroupId, memberName: member });
+    } catch (error) {
+        console.error(error);
+    }
+    e.target.reset();
+});
 
 async function postMember(userGroup) {
-    const response = await axios.post(`${backendBaseUrl}/group/postMember`, userGroup, { headers: {'Authorization': token}});
-    const data = response.data;
-    console.log(data);
-    displayGroupMembers(data);
+    try {
+        const response = await axios.post(`${backendBaseUrl}/group/postMember`, userGroup, { headers: { 'Authorization': token } });
+        console.log(response.data);
+        displayGroupMembers(response.data);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 function displayGroupMembers(obj) {
@@ -225,21 +224,71 @@ function displayGroupMembers(obj) {
     element.className = 'member-item';
     element.id = obj.user.id;
     element.textContent = obj.user.username;
-
-    // creating buttons
+    
     const delBtn = document.createElement('button');
     delBtn.className = 'delMember';
     delBtn.textContent = 'delete';
-
+    
     const adminBtn = document.createElement('button');
     adminBtn.className = 'adminMember';
     adminBtn.textContent = 'make-admin';
+    adminBtn.id = 0;
 
-    element.appendChild(adminBtn);
-    element.appendChild(delBtn);
+    delBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        try {
+            const groupId = obj.usergroup.groupId;
+            const userId = obj.user.id;
+            await axios.delete(`${backendBaseUrl}/group/deleteMember`, { data: { groupId, userId } });
+            memberItems.removeChild(elementDiv);
+        } catch (error) {
+            console.error(error);
+        }
+    });
 
+    let isAdmin = false;
+    adminBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+        let admin = event.target.id;
+        console.log(admin)
+        try {
+            if (admin === '0') {
+                admin = 1;
+                console.log(admin);
+
+                const response = await axios.patch(`${backendBaseUrl}/group/updateAdmin`, { admin: admin, obj: obj }, { headers: { 'Authorization': token } });
+                const data = response.data;
+                console.log(data);
+
+                adminBtn.textContent = 'remove-admin';
+                adminBtn.style.backgroundColor = 'darkRed';
+                adminBtn.style.color = 'white';
+                adminBtn.id = admin;
+                isAdmin = true;
+            }
+            else {
+                admin = 0;
+
+                const response = await axios.patch(`${backendBaseUrl}/group/updateAdmin`, { admin: admin, obj: obj }, { headers: { 'Authorization': token } });
+                const data = response.data;
+                console.log(data);
+
+                adminBtn.textContent = 'make-admin';
+                adminBtn.style.backgroundColor = 'white';
+                adminBtn.style.color = 'black';
+                adminBtn.id = admin;
+                isAdmin = false;
+            }
+
+        }
+        catch(error) {
+            console.log(error);
+        }
+    })
+    
+    element.append(adminBtn, delBtn);
     elementDiv.appendChild(element);
-    memberItems.appendChild(elementDiv)
+    memberItems.appendChild(elementDiv);
 }
 
 function displayGroups(obj) {
@@ -247,47 +296,32 @@ function displayGroups(obj) {
     const element = document.createElement('li');
     element.className = 'group-item';
     element.id = obj.id;
-    element.textContent = `Name : ${obj.name} | Creator : ${obj.creator}`;
+    element.textContent = `Name: ${obj.name} | Creator: ${obj.creator}`;
 
     const delBtn = document.createElement('button');
     delBtn.className = 'delGroup';
     delBtn.textContent = 'delete';
-
-    //appending
+    
+    delBtn.addEventListener('click', async () => {
+        try {
+            await axios.delete(`${backendBaseUrl}/group/deleteGroup`, { data: { groupId: obj.id } });
+            elementDiv.remove();
+        } catch (error) {
+            console.error(error);
+        }
+    });
+    
     element.appendChild(delBtn);
     elementDiv.appendChild(element);
     groupItems.appendChild(elementDiv);
-
-    delBtn.onclick = async (e) => {
-        e.preventDefault();
-        try {
-            const groupId = e.target.parentElement.id;
-            const groupDetails = {
-                groupId
-            }
-            const response = await axios.delete(`${backendBaseUrl}/group/deleteGroup`, { data: groupDetails});
-            const data = response.data;
-            groupItems.removeChild(e.target.parentElement.parentElement);
-        }
-        catch(error) {
-            console.log(error);
-        }
-    }
 }
-
 
 async function getGroupChats() {
-    const response = await axios.get(`${backendBaseUrl}/group/getGroupChats/${currentGroupId}`, { headers: {'Authorization': token}});
-    const data = response.data;
-    console.log(data)
-        // data.forEach(user => {
-        //     displayData(user);
-        // })
+    try {
+        const response = await axios.get(`${backendBaseUrl}/group/getGroupChats/${currentGroupId}`, { headers: { 'Authorization': token } });
+        messageContainer.innerHTML = '';
+        response.data.formattedChats.forEach(displayData);
+    } catch (error) {
+        console.error(error);
+    }
 }
-
-
-
-
-
-
-

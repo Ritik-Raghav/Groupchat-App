@@ -150,7 +150,16 @@ exports.getGroupById = async (req, res, next) => {
         const userIds = groupByUser.map(group => group.userId);
 
         const users = await User.findAll({
-            where: { id: userIds }
+            where: { id: userIds },
+            include: [
+                {
+                    model: Usergroup,
+                    attributes: ['isadmin'],
+                    where: {
+                        groupId: id
+                    }
+                }
+            ]
         });
 
         res.status(201).json({ group: group, users: users});
@@ -209,3 +218,36 @@ exports.getGroupChats = async (req, res, next) => {
         console.log(error);
     }
 }
+
+exports.updateAdmin = async (req, res, next) => {
+    try {
+        const { admin, obj } = req.body;
+        console.log('adminID <<<<<<<<' + admin);
+        console.log('obj<<<<<' + obj.usergroup.groupId);
+        console.log('useID<<<<<' + obj.usergroup.userId);
+
+        const isadmin = admin === 1 ? true : false;
+        console.log('isAdmin<<<<<<' + isadmin);
+
+        // Correct update format
+        const [affectedRows] = await Usergroup.update(
+            { isadmin },  // Fix: Wrap inside an object
+            {
+                where: {
+                    groupId: obj.usergroup.groupId,
+                    userId: obj.usergroup.userId
+                }
+            }
+        );
+
+        if (affectedRows > 0) {
+            res.status(200).json({ message: 'isadmin successfully updated' });
+        } else {
+            res.status(404).json({ message: 'Usergroup not found or no changes made' });
+        }
+    } catch (error) {
+        console.error('Error updating isadmin:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+

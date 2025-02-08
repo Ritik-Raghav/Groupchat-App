@@ -13,6 +13,7 @@ router.delete('/deleteMember', groupController.deleteMember);
 router.delete('/deleteGroup', groupController.deleteGroup);
 router.post('/postGroupChat', userAuthentication.authenticate, groupController.postGroupChat);
 router.get('/getGroupChats/:id',userAuthentication.authenticate, groupController.getGroupChats);
+router.patch('/updateAdmin',userAuthentication.authenticate, groupController.updateAdmin);
 
 
 

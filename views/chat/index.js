@@ -12,7 +12,7 @@ export const messageContainer = document.querySelector('#message-container');
 
 window.addEventListener('DOMContentLoaded', async () => {
     // getAllChats();
-    // getChatsById();
+    getChatsById();
 })
 
 messageForm.addEventListener('submit',  async (event) => {
@@ -78,19 +78,19 @@ export function displayData(obj) {
     scrollToBottom();
 }
 
-async function getAllChats() {
-    try {
-        const response = await axios.get(`${backendBaseUrl}/chat/getChats`, {headers: {'Authorization': token}});
-        const allChats = response.data;
-        localStorage.setItem('chats', allChats)
-        allChats.forEach(user => {
-            displayData(user);
-        })  
-    }
-    catch(error) {
-        console.log(error);
-    }
-}
+// async function getAllChats() {
+//     try {
+//         const response = await axios.get(`${backendBaseUrl}/chat/getChats`, {headers: {'Authorization': token}});
+//         const allChats = response.data;
+//         localStorage.setItem('chats', allChats)
+//         allChats.forEach(user => {
+//             displayData(user);
+//         })  
+//     }
+//     catch(error) {
+//         console.log(error);
+//     }
+// }
 
 let lastId = 0;
 async function getChatsById() {

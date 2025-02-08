@@ -92,6 +92,7 @@ body {
 .adminMember {
     margin-left: 120px;
     margin-right: 10px;
+    cursor: pointer;
 }
 
 .member-container {
