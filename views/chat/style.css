@@ -104,6 +104,28 @@ body {
     align-items: center;
 }
 
+.file-input {
+    display: none; /* Hides the default file input */
+}
+
+.file-label {
+    background-color: #0073ee;
+    color: white;
+    padding: 5px 5px;
+    /* border-radius: 5px; */
+    cursor: pointer;
+    font-size: 14px;
+    display: inline-block;
+    width: 70px; /* Adjust width */
+    text-align: center;
+    transition: background 0.3s ease-in-out;
+}
+
+.file-label:hover {
+    background-color: #0056b3;
+}
+
+
 
 #groupName {
     height: 30px;
@@ -259,10 +281,15 @@ body {
     height: 48px;
     font-size: 16px;
     border: none;
-    padding: 0px 20px;
+    padding: 0px 10px;
     outline: none;
     background-color: #fff;
     cursor: pointer;
+    transition: background 0.3s ease-in-out;;
+}
+
+.send-button:hover {
+    background-color:#dddddd;
 }
 
 .v-divider {

@@ -126,6 +126,7 @@ function displayAllGroupMembers(group, user) {
 
 groupItems.addEventListener('click', async (e) => { 
     e.preventDefault();
+
     if (e.target.tagName !== 'LI') return;
     
     groupChat = true;
@@ -153,15 +154,21 @@ groupItems.addEventListener('click', async (e) => {
 
 showGroupsBtn.addEventListener('click', async (e) => {
     e.preventDefault();
-    groupsContainer.style.display = groupsContainer.style.display === 'none' ? 'block' : 'none';
-    groupSetting.style.display = 'none';
-    memberContainer.style.display = groupsContainer.style.display === 'block' ? 'none' : 'block';
-    groupForm.style.display = groupsContainer.style.display === 'block' ? 'none' : 'flex';
+    try {
+        groupsContainer.style.display = groupsContainer.style.display === 'none' ? 'block' : 'none';
+        groupSetting.style.display = 'none';
+        memberContainer.style.display = groupsContainer.style.display === 'block' ? 'none' : 'block';
+        groupForm.style.display = groupsContainer.style.display === 'block' ? 'none' : 'flex';
     
-    if (!groupsFlag && groupsContainer.style.display === 'block') {
-        await getGroups();
-        groupsFlag = true;
+        if (!groupsFlag && groupsContainer.style.display === 'block') {
+            await getGroups();
+            groupsFlag = true;
+        }
     }
+    catch(error) {
+        console.log(error);
+    }
+    
 });
 
 async function getGroups() {
@@ -177,6 +184,7 @@ async function getGroups() {
 
 groupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+
     editGroup = false;
     
     try {
@@ -199,6 +207,7 @@ groupForm.addEventListener('submit', async (event) => {
 
 memberForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+    
     try {
         const member = e.target.selectMember.value;
         await postMember({ groupId: currentGroupId, memberName: member });

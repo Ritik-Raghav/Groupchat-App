@@ -7,10 +7,10 @@ const { Op } = require('sequelize');
 exports.postChat = async (req, res, next) => {
     try {
         const currentUser = req.user;
-        const { chat, dateTime} = req.body;
+        const { chat } = req.body;
         console.log(chat);
-        const newChat = await currentUser.createChat({ chat: chat, dateTime: dateTime});
-        res.status(200).json({'userId': currentUser.id, 'username': currentUser.username, 'chat': chat, 'dateTime': dateTime});
+        const newChat = await currentUser.createChat({ chat: chat});
+        res.status(200).json({'userId': currentUser.id, 'username': currentUser.username, 'chat': chat, 'dateTime': newChat.createdAt});
     }
     catch(error) {
         console.log(error);
@@ -35,7 +35,7 @@ exports.getChats = async (req, res, next) => {
         const formattedChats = chats.map(chat => ({
             id: chat.userId,
             chat: chat.chat,
-            dateTime: chat.dateTime,
+            dateTime: chat.createdAt,
             username: chat.user.username
         }));
 
@@ -65,7 +65,7 @@ exports.getChatsById = async (req, res, next) => {
                     attributes: ['username'],
                 },
             ],
-            order: [['dateTime', 'ASC']],
+            order: [['createdAt', 'ASC']],
         });
 
         let change = true;
@@ -74,7 +74,7 @@ exports.getChatsById = async (req, res, next) => {
             id: chat.id,
             userId: chat.userId,
             chat: chat.chat,
-            dateTime: chat.dateTime,
+            dateTime: chat.createdAt,
             username: chat.user.username
         }));
         console.log(formattedChats);

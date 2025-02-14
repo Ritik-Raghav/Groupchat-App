@@ -35,8 +35,8 @@
                                 <button type="submit" class="send-button" id="add-member-btn">Add</button>
                             </form>
                             <ul  id="member-items">
-                                <li class="member-item">hi there <button>send</button></li>
-                                <li class="member-item">hi there <button>send</button></li>
+                                <!-- <li class="member-item">hi there <button>send</button></li>
+                                <li class="member-item">hi there <button>send</button></li> -->
                             </ul>
                         </div>
                     </div>
@@ -44,8 +44,8 @@
 
                 <div class="groups-container">
                     <ul  id="group-items">
-                        <li class="group-item">group-1</li>
-                        <li class="group-item">the boys </li>
+                        <!-- <li class="group-item">group-1</li>
+                        <li class="group-item">the boys </li> -->
                     </ul>
                 </div>
                 
@@ -60,7 +60,7 @@
                 <h1 class="name-input">ChatApp</h1>
             </div>
             <ul class="message-container" id="message-container">
-                <li class="message-left">
+                <!-- <li class="message-left">
                     <p class="message">
                         dummy text
                         <span>bluebird ⚫ 26 July 10:40</span>
@@ -72,12 +72,17 @@
                         dummy text
                         <span>bluebird ⚫ 26 July 10:40</span>
                     </p>
-                </li>
+                </li> -->
             </ul>
     
             <form class="message-form" id="message-form">
                 <input type="text" name="messageInput" class="message-input" id="messageInput">
                 <div class="v-divider"></div>
+                <label for="fileInput" class="file-label">
+                    📁 Attach File
+                </label>
+                <input type="file" name="fileInput" class="file-input" id="fileInput">
+                
                 <button type="submit" class="send-button">
                     send <span><i class="fas fa-paper-plane"></i></span>
                 </button>

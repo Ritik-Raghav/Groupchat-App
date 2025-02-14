@@ -172,10 +172,10 @@ exports.getGroupById = async (req, res, next) => {
 exports.postGroupChat = async (req, res, next) => {
     try {
         const currentUser = req.user;
-        const { chat, dateTime, groupId } = req.body;
+        const { chat, groupId } = req.body;
         console.log('chat <<<<<<<<<<<<' + chat);
-        const newChat = await currentUser.createChat({ chat: chat, dateTime: dateTime, groupId: groupId});
-        res.status(200).json({'userId': currentUser.id, 'username': currentUser.username, 'chat': chat, 'dateTime': dateTime, 'groupId': groupId});
+        const newChat = await currentUser.createChat({ chat: chat, groupId: groupId});
+        res.status(200).json({'userId': currentUser.id, 'username': currentUser.username, 'chat': chat, 'dateTime': newChat.createdAt, 'groupId': groupId});
     }
     catch(error) {
         console.log(error);
@@ -198,7 +198,7 @@ exports.getGroupChats = async (req, res, next) => {
                     attributes: ['username'],
                 },
             ],
-            order: [['dateTime', 'ASC']],
+            order: [['createdAt', 'ASC']],
         });
 
         // Formatting the response
@@ -207,7 +207,7 @@ exports.getGroupChats = async (req, res, next) => {
             userId: chat.userId,
             groupId: chat.groupId,
             chat: chat.chat,
-            dateTime: chat.dateTime,
+            dateTime: chat.createdAt,
             username: chat.user.username
         }));
         console.log(formattedChats);

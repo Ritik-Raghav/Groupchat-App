@@ -9,13 +9,14 @@ const Chat = sequelize.define('chat', {
         primaryKey: true
     },
     chat: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,  // <-- Change from STRING to TEXT to store longer URLs
         allowNull: false
     },
-    dateTime: {
-        type: Sequelize.STRING,
-        allowNull: false
-    }
+    // dateTime: {
+    //     type: Sequelize.STRING,
+    //     allowNull: true,
+    //     defaultValue: Sequelize.NOW
+    // }
 });
 
 module.exports = Chat;

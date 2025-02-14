@@ -1,4 +1,3 @@
-
 import { currentGroupId, groupChat } from './group.js';
 
 export const frontendBaseUrl = "http://127.0.0.1:5501";
@@ -9,119 +8,136 @@ export const token = localStorage.getItem('token');
 export const messageForm = document.querySelector('#message-form');
 export const messageInput = document.querySelector('#messageInput');
 export const messageContainer = document.querySelector('#message-container');
+export const fileInput = document.querySelector('#fileInput');
 
 window.addEventListener('DOMContentLoaded', async () => {
-    // getAllChats();
     getChatsById();
-})
-
-messageForm.addEventListener('submit',  async (event) => {
-    event.preventDefault();
-    console.log(groupChat)
-    
-    try {
-
-        if (!groupChat) {
-            const chat = messageInput.value;
-            const dateTime = new Date();
-            const chatObj = {
-                chat,
-                dateTime
-            }
-
-            const response = await axios.post(`${backendBaseUrl}/chat/postChat`, chatObj, { headers: {'Authorization': token}});
-            const data = response.data;
-            displayData(data);
-        }
-        else {
-                    console.log(groupChat)
-                    const chat = messageInput.value;
-                    console.log(chat)
-                    const dateTime = new Date();
-                    const chatObj = {
-                        chat,
-                        dateTime,
-                        groupId: currentGroupId
-                    }
-        
-                    console.log(chatObj)
-            
-                    const response = await axios.post(`${backendBaseUrl}/group/postGroupChat`, chatObj, { headers: {'Authorization': token}});
-                    const data = response.data;
-                    displayData(data);
-
-
-        }
-    }
-    catch(error) {
-        console.log(error);
-    }
-
-    event.target.reset();
 });
+
+fileInput.addEventListener('change', async (event) => {
+    event.preventDefault(); // ✅ Ensure no form submission occurs
+    console.log("File selected, preventing form submission...");
+
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    const fileUrl = await uploadFile(file);
+
+    if (fileUrl) {
+        displayData({
+            chat: fileUrl,
+            username: "You",
+            dateTime: new Date().toISOString(),
+            userId: Number(localStorage.getItem('id'))
+        });
+
+        fileInput.value = null; // ✅ Reset file input
+    }
+});
+
+messageForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); // ✅ Prevents form submission refresh
+
+    try {
+        const chat = messageInput.value.trim();
+        let fileUrl = fileInput.files.length ? await uploadFile(fileInput.files[0]) : null;
+
+        if (!chat && !fileUrl) return; // Prevent empty messages
+
+        const chatObj = {
+            chat: fileUrl ? fileUrl : chat,
+            groupId: currentGroupId
+        };
+
+        const response = await axios.post(`${backendBaseUrl}/group/postGroupChat`, chatObj, {
+            headers: { 'Authorization': token }
+        });
+
+        displayData(response.data); // ✅ Update chat UI immediately
+
+        // ✅ Clear inputs
+        messageInput.value = '';
+        fileInput.value = null; // Properly reset file input
+
+    } catch (error) {
+        console.error("Error sending message:", error);
+    }
+});
+
+
+async function uploadFile(file) {
+    try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await axios.post(`${backendBaseUrl}/chat/file`, formData, {
+            headers: {
+                'Authorization': token,
+                'group-id': currentGroupId,
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+
+        console.log(response.data.fileUrl);
+        return response.data.fileUrl; // Ensure backend returns the correct URL
+    } catch (error) {
+        console.error("File upload failed:", error);
+        return null;
+    }
+}
+
 
 export function displayData(obj) {
     const messageElement = document.createElement('li');
     const id = Number(localStorage.getItem('id'));
     const isCurrentUser = obj.userId === id;
-    // console.log(isCurrentUser)
-    // console.log(obj.id + " ---- " + id)
+
     messageElement.className = isCurrentUser ? 'message-right' : 'message-left';
+
+    let messageContent;
+    if (obj.chat.startsWith('/uploads/')) {
+        messageContent = `<a href="${backendBaseUrl}${obj.chat}" target="_blank">📎 Download File</a>`;
+    } else {
+        messageContent = obj.chat;
+    }
+
     messageElement.innerHTML = `
         <p class="message">
-            ${obj.chat}
+            ${messageContent}
             <span>${obj.username} ⚫ ${moment(obj.dateTime).fromNow()}</span>
         </p>
     `;
-    messageContainer.appendChild(messageElement);
 
+    messageContainer.appendChild(messageElement);
     scrollToBottom();
 }
 
-// async function getAllChats() {
-//     try {
-//         const response = await axios.get(`${backendBaseUrl}/chat/getChats`, {headers: {'Authorization': token}});
-//         const allChats = response.data;
-//         localStorage.setItem('chats', allChats)
-//         allChats.forEach(user => {
-//             displayData(user);
-//         })  
-//     }
-//     catch(error) {
-//         console.log(error);
-//     }
-// }
-
-let lastId = 0;
 async function getChatsById() {
-    let localChats = localStorage.getItem('localChats');
-    if (localChats === null) {
+    try {
+        let localChats = localStorage.getItem('localChats');
+    if (!localChats) {
         localStorage.setItem('localChats', '[]');
-        localChats = localStorage.getItem('localChats')
+        localChats = '[]';
     }
-    const chatsArr = JSON.parse(localChats);
-    if (chatsArr.length != 0) {
-        lastId = chatsArr[chatsArr.length - 1].id;
-    }
-    const response = await axios.get(`${backendBaseUrl}/chat/getChats/${lastId}`, {headers: {'Authorization': token}});
-    const data = response.data;
-    // if (data.change) {
-        const mergedArray = chatsArr.concat(data.formattedChats);
-        // console.log(mergedArray)
-        const resultString = JSON.stringify(mergedArray);
-        localStorage.setItem('localChats', resultString);
-        mergedArray.forEach(user => {
-            displayData(user);
-        })
-    // }
 
+    const chatsArr = JSON.parse(localChats);
+    const lastId = chatsArr.length ? chatsArr[chatsArr.length - 1].id : 0;
+
+    const response = await axios.get(`${backendBaseUrl}/chat/getChats/${lastId}`, {
+        headers: { 'Authorization': token }
+    });
+
+    const mergedArray = chatsArr.concat(response.data.formattedChats);
+    localStorage.setItem('localChats', JSON.stringify(mergedArray));
+
+    mergedArray.forEach(displayData);
+    }
+    catch(error) {
+        console.log(error);
+    }
+    
 }
 
 function scrollToBottom() {
     messageContainer.scrollTo(0, messageContainer.scrollHeight);
 }
-
-// setInterval(() => {
-//     messageContainer.innerHTML = '';
-//     getChatsById();
-// }, 2000);
